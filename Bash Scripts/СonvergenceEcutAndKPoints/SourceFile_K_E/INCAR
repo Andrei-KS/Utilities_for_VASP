@@ -1,0 +1,15 @@
+SYSTEM = _myNameSystem
+
+LCHARG = .FALSE.
+LPLANE = .FALSE.
+LREAL = .FALSE.
+LWAVE = .FALSE.
+
+ISTART = 0
+SIGMA = 0.1
+ENCUT = _myEcut
+GGA = _myGGA
+
+EDIFF = 1E-06
+
+NCORE = _myCore
