@@ -1,0 +1,8 @@
+_myNameSystem M-G-L
+100
+line
+reciprocal
+0.5 0.0 0.0
+0 0 0
+0 0 0
+0.5 0.0 0.5

@@ -1,0 +1,13 @@
+SYSTEM = _myNameSystem    
+
+ICHARG = 11
+
+ISMEAR = 0
+SIGMA = 0.1
+ENCUT = 400
+GGA=PE
+
+EDIFF = 1E-06
+LORBIT = 11
+
+NCORE = 6

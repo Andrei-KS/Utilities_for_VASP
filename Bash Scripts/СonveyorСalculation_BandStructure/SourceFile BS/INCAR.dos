@@ -1,0 +1,10 @@
+SYSTEM = _myNameSystem
+
+ISTART = 0
+SIGMA = 0.1
+ENCUT = 400
+GGA=PE
+
+EDIFF = 1E-06
+
+NCORE = 6
