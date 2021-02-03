@@ -1,11 +1,11 @@
 # Config file for function runVASP
 
-# OPTION
+# Different builds of VASP
 STD = /home/master/bin/vasp.5.4.4/bin/vasp_std
 NCL = /home/master/bin/vasp.5.4.4/bin/vasp_ncl
 GAM = /home/master/bin/vasp.5.4.4/bin/vasp_gam
 
 
-# RUN
+# Different run options of VASP
 run2 = mpirun -np 2
 run30 = mpirun -np 30
