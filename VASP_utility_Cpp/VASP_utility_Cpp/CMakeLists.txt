@@ -11,11 +11,17 @@ set(CTEST_PROJECT_NAME "VASP_Utility_Cpp")
 set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG_BUILD")
+
+# connecting the necessary modules
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/_cmake")
+include(CreatLibFromFiles)
+include(CreatTestForLib)
+include(CopyFolder)
+
+
 ###
 # block of create libs
 ###
-include(CreatLibFromFiles.cmake)
-include(CreatTestForLib.cmake)
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	# create UTest lib
@@ -159,8 +165,13 @@ include_directories(
 # Add source to this project's executable.
 add_executable (${PROJECT_NAME} "main.cpp")
 
-if(NOT EXISTS "${PROJECT_BINARY_DIR}/exempl")
-	file(WRITE "${PROJECT_BINARY_DIR}/exempl" "IS EMPTY")
+
+
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+	if(NOT EXISTS "${PROJECT_BINARY_DIR}/exempl")
+		file(WRITE "${PROJECT_BINARY_DIR}/exempl" "IS EMPTY")
+	endif()
+	CopyFolder("${PROJECT_SOURCE_DIR}/exemple" "${PROJECT_BINARY_DIR}/exemple")
 endif()
 
 target_link_libraries(${PROJECT_NAME} 

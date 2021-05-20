@@ -11,11 +11,15 @@ int main()
 	Panel mainPanel("MainMenu");
 	mainPanel.ChangeTextMessage("Main menu:");
 
-	bool ExitFlag = false;
-	ToggleFunction * ExitFunction = new ToggleFunction(&ExitFlag);
+	
+#ifdef DEBUG_BUILD
 	std::string nameFile = "exempl";
 	ShowContentTextFileFunction* ShowContentFunction = new ShowContentTextFileFunction(nameFile);
 	mainPanel.AddItem("Show content " + nameFile, ShowContentFunction);
+#endif
+
+	bool ExitFlag = false;
+	ToggleFunction * ExitFunction = new ToggleFunction(&ExitFlag);
 	mainPanel.AddItem("Exit", ExitFunction);
 	while (!ExitFlag)
 	{
