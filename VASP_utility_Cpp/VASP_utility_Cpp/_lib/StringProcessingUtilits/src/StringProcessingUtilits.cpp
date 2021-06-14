@@ -12,7 +12,7 @@ std::vector<std::string> StringProcessingUtilits::SplitStringToVector(const std:
 	{
 		if ((sourceString[i] == delimiterSymbol) || (sourceString[i] == '\0'))
 		{
-			if ((outputVector.size() != 0) && (outputVector[currentWordInVetor].size() != 0))
+			if (!addNewWordFlag)
 			{
 				addNewWordFlag = true;
 				currentWordInVetor++;

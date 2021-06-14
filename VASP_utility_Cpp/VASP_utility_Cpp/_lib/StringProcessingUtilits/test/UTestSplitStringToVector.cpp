@@ -14,6 +14,7 @@ void UTestSplitStringToVector::excute()
 	TestWithDifferentAmountLetterInWords({ "a" }, '-');
 	TestWithDifferentAmountLetterInWords({ "a", "ad" }, ' ');
 	TestWithDifferentAmountLetterInWords({ "9842h", "aadad", "a3oirhn", "asidne" }, ' ');
+	TestWithDifferentAmountLetterInWords({ "98 ", "aadad", "a3oirhn", "asidne" }, ' ');
 }
 
 void UTestSplitStringToVector::TestEmptyString()
