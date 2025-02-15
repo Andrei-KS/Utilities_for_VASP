@@ -1,106 +1,80 @@
 
 
 #include "Panel.h"
-#include "CalledPanelFunction.h"
 #include <iostream>
-#include <exception>
+#include <stdexcept>
 
-Panel::Panel(const std::string& titel)
-	: itsTitel(titel)
-	, itsTextMessage(std::string())
-	, itsItems(std::vector<std::pair<std::string, CalledPanelFunction*>>())
-{
-}
 
-void Panel::ChangeTextMessage(const std::string& textMessage)
-{
-	itsTextMessage = textMessage;
-}
+namespace CLI {
+  Panel::Panel(const std::string& titel)
+    : mTitel(titel)
+    , mPromMessage(std::string())
+    , mOptions(std::vector<OptionSetting>())
+    , mIsPendingClose(false)
+  {
+  }
 
-void Panel::ShowPanel() const
-{
-	ShowTextMessage();
-	ShowItems();
-}
+  Panel::~Panel()
+  {
+  }
 
-void Panel::ShowTextMessage() const
-{
-	std::cout << itsTextMessage << std::endl;
-}
+  const OptionSetting& Panel::GetOption(size_t optionIndex) const
+  {
+    if (optionIndex > mOptions.size())
+    {
+      throw std::out_of_range(std::string("Panel::GetOption get ") + std::to_string(optionIndex));
+    }
+    return mOptions[optionIndex];
+  }
 
-void Panel::ShowItems() const
-{
-	for(size_t it = 0; it < itsItems.size(); it++)
-	{
-		std::cout << it << ".\t" << itsItems[it].first << std::endl;
-	}
-}
+  void Panel::ChangeOption(size_t optionIndex, const OptionSetting& optionSetting)
+  {
+    if (optionIndex > mOptions.size())
+    {
+      throw std::out_of_range(std::string("Panel::ChangeOption get ") + std::to_string(optionIndex));
+    }
+    mOptions[optionIndex] = optionSetting;
+  }
 
-void Panel::AddItem(const std::string& textInItems, CalledPanelFunction* cpfunction)
-{
-	itsItems.push_back(std::pair<std::string, CalledPanelFunction*>(textInItems, cpfunction));
-}
+  void Panel::AddOption(const OptionSetting& optionSetting)
+  {
+    mOptions.push_back(optionSetting);
+  }
 
-void Panel::RemoveItem(size_t indexItem)
-{
-	itsItems.erase(itsItems.begin() + indexItem);
-}
+  void Panel::RemoveOption(size_t optionIndex)
+  {
+    if (optionIndex > mOptions.size())
+    {
+      throw std::out_of_range(std::string("Panel::ChangeOption get ") + std::to_string(optionIndex));
+    }
+    mOptions.erase(mOptions.begin() + optionIndex);
+  }
 
-void Panel::ChangeItem(size_t indexItem, const std::string& textInItems, CalledPanelFunction* cpfunction)
-{
-	try
-	{
-		itsItems.at(indexItem).first = textInItems;
-		itsItems.at(indexItem).second = cpfunction;
+  void Panel::SelectOption(size_t optionIndex)
+  {
+    if (optionIndex > mOptions.size())
+    {
+      throw std::out_of_range(std::string("Panel::ChangeOption get ") + std::to_string(optionIndex));
+    }
+    mOptions[optionIndex].mFunction();
+  }
 
-	}
-	catch (const std::exception& e)
-	{
-		std::cout << "Error:\tPanel::ChangeItem(size_t indexItem, const std::string& textInItems, CalledPanelFunction* cpfunction):\t" << e.what() << std::endl;
-		throw e;
-	}
-}
+  void Panel::ShowPromMessage() const
+  {
+    std::cout << mPromMessage << std::endl;
+  }
 
-void Panel::ExecuteItemFunction(size_t indexItem)
-{
-	CalledPanelFunction* cpfunction = nullptr;
-	try
-	{
-		cpfunction = itsItems.at(indexItem).second;
-	}
-	catch (const std::exception& e)
-	{
-#ifdef DEBUG_BUILD
-		std::cout << "Error:\tPanel::ExecuteItemFunction(size_t indexItem):\t" << e.what() << std::endl;
-#endif
-		std::cout << "This value is not valid" << std::endl;
-		return;
-	}
+  void Panel::ShowOptions() const
+  {
+    for(size_t optionIndex = 0; optionIndex < mOptions.size(); ++optionIndex)
+    {
+      std::cout << optionIndex << ".\t" << mOptions[optionIndex].mName << std::endl;
+    }
+  }
 
-	if (cpfunction == nullptr)
-	{
-		return;
-	}
-
-	cpfunction->execute();
-}
-
-const std::string& Panel::GetTitel() const
-{
-	return itsTitel;
-}
-
-const std::string& Panel::GetTextMessage() const
-{
-	return itsTextMessage;
-}
-
-const std::vector<std::pair<std::string, CalledPanelFunction*>>& Panel::GetItems() const
-{
-	return itsItems;
-}
-
-const std::pair<std::string, CalledPanelFunction*>& Panel::GetItem(size_t indexItem) const
-{
-	return itsItems.at(indexItem);
+  void Panel::ShowPanel() const
+  {
+    ShowPromMessage();
+    ShowOptions();
+  }
 }
