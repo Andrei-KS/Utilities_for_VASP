@@ -41,6 +41,21 @@ namespace CLI {
     mOptions.push_back(optionSetting);
   }
 
+  void Panel::swapOption(const size_t firstOptionIndex, const size_t secondOptionIndex)
+  {
+    if (firstOptionIndex > mOptions.size())
+    {
+      throw std::out_of_range(std::string("Panel::swapOption firstOptionIndex [" + std::to_string(firstOptionIndex) + "] bigger than mOptions.size()"));
+    }
+    if (secondOptionIndex > mOptions.size())
+    {
+      throw std::out_of_range(std::string("Panel::swapOption secondOptionIndex [" + std::to_string(secondOptionIndex) + "] bigger than mOptions.size()"));
+    }
+    OptionSetting temp = mOptions[firstOptionIndex];
+    mOptions[firstOptionIndex] = mOptions[secondOptionIndex];
+    mOptions[secondOptionIndex] = temp;
+  }
+
   void Panel::RemoveOption(size_t optionIndex)
   {
     if (optionIndex > mOptions.size())
@@ -74,7 +89,10 @@ namespace CLI {
 
   void Panel::ShowPanel() const
   {
+    const std::string seporator(40, '-');
+    std::cout << seporator << std::endl;
     ShowPromMessage();
     ShowOptions();
+    std::cout << seporator << std::endl;
   }
 }

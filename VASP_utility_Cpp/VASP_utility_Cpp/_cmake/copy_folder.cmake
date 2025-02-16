@@ -1,13 +1,17 @@
-## This function copies the contents of a folder
-## Name : CopyFolder
-## Param : 
-##	srcDir - directory from where the content will be copied
-##	destDir - place where will be copied
-## @author Andrei-KS
-##
-## @see https://stackoverflow.com/questions/697560/how-to-copy-directory-from-source-tree-to-binary-tree
-function(CopyFolder srcDir destDir)
-	set(IsCopiedFiles False)
+#[[-------------------------------------------------------------------------
+                    Definition and description of function
+]]#-------------------------------------------------------------------------
+#[[
+# This function copies the contents of a folder
+# @name		: copy_folder
+# @param	: srcDir		- Whence the content will be copied
+# @param	: destDir		- Where the content will be copied
+#
+# @author Andrei-KS
+# @see https://stackoverflow.com/questions/697560/how-to-copy-directory-from-source-tree-to-binary-tree
+]]#
+function(copy_folder srcDir destDir)
+	set(isCopiedFiles False)
 	if(NOT EXISTS "${destDir}")
 		make_directory(${destDir})
 	endif()
@@ -25,7 +29,7 @@ function(CopyFolder srcDir destDir)
 		# Copy file if it is not at destination directory or is not equal source file
 		if(NOT EXISTS "${destDir}/${fileToCopy}")
 			file(COPY "${srcDir}/${fileToCopy}" DESTINATION "${DirectoryString}/")
-			set(IsCopiedFiles True)
+			set(isCopiedFiles True)
 		else()
 			set(sizeSource)
 			file(SIZE "${srcDir}/${fileToCopy}" sizeSource)
@@ -33,12 +37,14 @@ function(CopyFolder srcDir destDir)
 			file(SIZE "${destDir}/${fileToCopy}" sizeDestination)
 			if(NOT sizeSource  EQUAL sizeDestination)
 				file(COPY "${srcDir}/${fileToCopy}" DESTINATION "${DirectoryString}/")
-				set(IsCopiedFiles True)
+				set(isCopiedFiles True)
 			endif()
 		endif()
+
+		if(isCopiedFiles)
+			message(STATUS "copy_folder: source Directory: ${srcDir} --> destination Directory: ${destDir}")
+		endif()
+
 	endforeach()
-	if(IsCopiedFiles)
-		message(STATUS "CopyFolder: source Directory: ${srcDir} --> destination Directory: ${destDir}")
-	endif()
 
 endfunction()

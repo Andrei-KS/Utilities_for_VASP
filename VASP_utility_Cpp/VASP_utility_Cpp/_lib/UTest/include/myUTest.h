@@ -7,7 +7,7 @@
 class myUTest
 {
 public:
-	virtual ~myUTest() = 0;
+  virtual ~myUTest() = 0;
 	virtual void excute() = 0;
 	static myUTest* Utest;
 };

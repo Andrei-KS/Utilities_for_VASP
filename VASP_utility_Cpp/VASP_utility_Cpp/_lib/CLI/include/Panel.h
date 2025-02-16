@@ -63,6 +63,11 @@ namespace CLI {
     /**
     *
     */
+    virtual void swapOption(const size_t firstOptionIndex, const size_t secondOptionIndex) override;
+
+    /**
+    *
+    */
     virtual void RemoveOption(size_t optionIndex) override;
 
     /**

@@ -71,9 +71,14 @@ namespace CLI {
     virtual void AddOption(const OptionSetting& optionSetting) = 0;
 
     /**
+    * 
+    */
+    virtual void swapOption(const size_t firstOptionIndex, const size_t secondOptionIndex) = 0;
+
+    /**
     *
     */
-    virtual void RemoveOption(size_t optionIndexItem) = 0;
+    virtual void RemoveOption(size_t optionIndex) = 0;
 
     /**
     *
