@@ -7,28 +7,34 @@
 
 #include "TextFileHandler.h"
 
-class EIGENVALFileConvertingHandler : public TextFileHandler
+namespace FileProcessing
 {
-public:
-	/**
-	 * 
-	 */
-	EIGENVALFileConvertingHandler(std::string fileName);
+  /**
+  *
+  */
+  class EIGENVALFileConvertingHandler : public TextFileHandler
+  {
+  public:
+    /**
+     *
+     */
+    EIGENVALFileConvertingHandler(std::string fileName);
 
-	/**
-	 * 
-	 */
-	~EIGENVALFileConvertingHandler();
+    /**
+     *
+     */
+    ~EIGENVALFileConvertingHandler();
 
-	/**
-	 * 
-	 */
-	virtual void Convert(std::string destinationFileName, double FermiEnergy = 0);
+    /**
+     *
+     */
+    virtual void Convert(double FermiEnergy = 0);
 
-	/**
-	 * 
-	 */
-	virtual void GetFermiSurface(std::string destinationFileName, double FermiEnergy = 0, double accuracy = 0.01);
-};
+    /**
+     *
+     */
+    virtual void GetFermiSurface(std::string destinationFileName, double FermiEnergy = 0, double accuracy = 0.01);
+  };
+}
 
 #endif // !__EIGENVALFILECONVERTINGHANDLER_H__

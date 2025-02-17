@@ -4,6 +4,7 @@
 #include "PanelFactory.h"
 #include <iostream>
 #include "EIGENVALFileConvertingHandler.h"
+#include "StringProcessingUtilits.h"
 #include <unordered_map>
 #include <stdexcept>
 #include "PanelManger.h"
@@ -86,17 +87,7 @@ namespace VASP_utility {
 #endif
   }
 
-  std::string getPathSeparate()
-  {
-#if defined(WIN32)||defined(_WIN32)
-    return "\\";
-#else
-    return "/";
-#endif
-  }
-
-
-  EIGENVALFileConvertingHandler* eigenvalFileConvertingHandler = nullptr;
+  FileProcessing::EIGENVALFileConvertingHandler* eigenvalFileConvertingHandler = nullptr;
   double* eigenvalFermiLevel = nullptr;
   std::string GetPromEIGENVAL(std::shared_ptr<CLI::IPanel> panel)
   {
@@ -104,12 +95,11 @@ namespace VASP_utility {
     if (panel.get())
     {
       result = panel->GetTitel() +
-        "\n EIGENVAL " + (eigenvalFileConvertingHandler == nullptr ? "not found" : eigenvalFileConvertingHandler->getFullFileName()) +
-        "\n FermiLevel " + std::to_string(*eigenvalFermiLevel);
+        "\n EIGENVAL path : " + (eigenvalFileConvertingHandler == nullptr ? "not found" : eigenvalFileConvertingHandler->getFullFileName()) +
+        "\n FermiLevel    : " + std::to_string(*eigenvalFermiLevel);
     }
     return result;
   }
-
 
   void createMenu()
   {
@@ -120,27 +110,39 @@ namespace VASP_utility {
     eigenvalPanel->ChangePromMessage(GetPromEIGENVAL(eigenvalPanel));
 
     std::weak_ptr<CLI::IPanel> wpEigenvalPanel = eigenvalPanel;
+    CLI::OptionSetting runConvertOptionSetting{ "Run Convert", [wpEigenvalPanel]()->void
+      {
+        auto panel = wpEigenvalPanel.lock();
+        std::cout << "Please wait...";
+        eigenvalFileConvertingHandler->Convert(*eigenvalFermiLevel);
+      }
+    };
+    eigenvalPanel->AddOption(runConvertOptionSetting);
+
     CLI::OptionSetting setEIGENVALPathOptionSetting{ "Set new EIGENVAL path", [wpEigenvalPanel]()->void
       {
         auto panel = wpEigenvalPanel.lock();
-        std::cout << "please enter new EIGENVAL path(or !back if you want return to panel):";
         std::string nameFile;
+        // TODO: Andrei-KS 2025:
+        // need to resolve issue with twice calling getline,
+        // because if it is deleted, we will skip the required input string.
+        // I think we need to rid of buffer content of cin.
         std::getline(std::cin, nameFile);
         while (true)
         {
+          std::cout << "please enter new EIGENVAL path(or !back if you want return to panel):";
           std::cin.clear();
           std::getline(std::cin, nameFile);
-          
+
           if(nameFile == "!back")
           {
             break;
           }
 
-          nameFile += getPathSeparate() + "EIGENVAL";
-          
+          nameFile = nameFile + StringProcessingUtilits::getPathSeparate() + "EIGENVAL";
           try
           {
-            EIGENVALFileConvertingHandler* newEigenvalFileConvertingHandler = new EIGENVALFileConvertingHandler(nameFile);
+            FileProcessing::EIGENVALFileConvertingHandler* newEigenvalFileConvertingHandler = new FileProcessing::EIGENVALFileConvertingHandler(nameFile);
             delete eigenvalFileConvertingHandler;
             eigenvalFileConvertingHandler = newEigenvalFileConvertingHandler;
             break;
@@ -186,7 +188,7 @@ int main()
   try
   {
     std::string nameEIGENVAL = "EIGENVAL";
-    VASP_utility::eigenvalFileConvertingHandler = new EIGENVALFileConvertingHandler(nameEIGENVAL);
+    VASP_utility::eigenvalFileConvertingHandler = new FileProcessing::EIGENVALFileConvertingHandler(nameEIGENVAL);
   }
   catch (std::exception e)
   {
