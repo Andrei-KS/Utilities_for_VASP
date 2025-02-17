@@ -9,7 +9,8 @@
 #include <string>
 #include <functional>
 
-namespace CLI {
+namespace CLI
+{
   /**
   *
   */
@@ -20,8 +21,10 @@ namespace CLI {
   };
 
   /**
+  * 
   */
-  enum class PanelType {
+  enum class PanelType
+  {
     DEFUALT = 0,
     NUM_PANEL_TYPE,
   };

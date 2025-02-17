@@ -4,13 +4,13 @@
 #include "Panel.h"
 
 namespace CLI {
-  std::shared_ptr<IPanel> PanelFactory::getPanel(PanelType type, const char* panelName)
+  std::shared_ptr<IPanel> PanelFactory::getPanel(const PanelSetting& setting)
   {
     IPanel* panel = nullptr;
-    switch (type)
+    switch (setting.mType)
     {
     case PanelType::DEFUALT:
-      panel = new Panel(std::string(panelName));
+      panel = new Panel(std::string(setting.mName));
       break;
     }
     return std::shared_ptr<IPanel>(panel);

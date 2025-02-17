@@ -9,7 +9,8 @@
 #include <vector>
 #include "PanelType.h"
 
-namespace CLI {
+namespace CLI
+{
   /**
   * 
   * Title

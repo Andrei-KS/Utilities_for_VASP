@@ -6,10 +6,56 @@
 #include "EIGENVALFileConvertingHandler.h"
 #include <unordered_map>
 #include <stdexcept>
+#include "PanelManger.h"
 
 namespace VASP_utility {
-  std::unordered_map<std::string, std::shared_ptr<CLI::IPanel>> panelMap = std::unordered_map<std::string, std::shared_ptr<CLI::IPanel>>();
-  std::string nextPanel;
+  inline void KeepWindowOpen()
+  {
+    std::cin.clear();
+    std::cout << "Please enter a character to exit\n";
+    char ch;
+    std::cin >> ch;
+    return;
+  }
+
+  void SkipToInt()
+  {
+    std::cout << "Sorry, that was not a number; please try again\n";
+    if (std::cin.fail())
+    { // we found something that wasn’t an integer
+      std::cin.clear(); // we’d like to look at the characters
+      for (char ch; std::cin >> ch; )
+      { // throw away non - digits
+        if (isdigit(ch) || ch == '-')
+        {
+          std::cin.unget(); // put the digit back, so that we can read the number
+          return;
+        }
+      }
+    }
+    throw std::exception("no input"); // eof or bad: give up
+  }
+
+  int GetInt(const std::function<bool(int)> check = [](int) {return true; })
+  {
+    int n = 0;
+    while (true)
+    {
+      if (std::cin >> n)
+      {
+        if (check(n))
+        {
+          return n;
+        }
+        else
+        {
+          continue;
+        }
+      }
+      SkipToInt();
+    }
+  }
+
 
   void clear_screen()
   {
@@ -20,72 +66,35 @@ namespace VASP_utility {
 #endif
   }
 
-  std::shared_ptr<CLI::IPanel> createMainPanel()
+  void createMenu()
   {
-    std::shared_ptr<CLI::IPanel> spPanel = CLI::PanelFactory::getPanel(CLI::PanelType::DEFUALT, "MainMenu");
-    spPanel->ChangePromMessage(spPanel->GetTitel());
-    std::weak_ptr<CLI::IPanel> wpPanel = spPanel;
-    CLI::OptionSetting exitOptionSetting{ "Exit", [wpPanel]()->void
-      {
-        if (auto panel = wpPanel.lock())
-        {
-          panel->ClosePanel();
-        }
-        nextPanel.clear();
-      }
-    };
-    spPanel->AddOption(exitOptionSetting);
+    std::shared_ptr<CLI::IPanel> mainMenupanel = CLI::PanelFactory::getPanel({ CLI::PanelType::DEFUALT, "MainMenu" });
+    mainMenupanel->ChangePromMessage(mainMenupanel->GetTitel());
 
-    return spPanel;
-  }
+    std::shared_ptr<CLI::IPanel> eigenvalPanel = CLI::PanelFactory::getPanel({ CLI::PanelType::DEFUALT, "EIGENVALPanel" });
+    eigenvalPanel->ChangePromMessage(eigenvalPanel->GetTitel());
 
-  std::shared_ptr<CLI::IPanel> createEIGENVALPanel(std::shared_ptr<CLI::IPanel> parent)
-  {
-    std::shared_ptr<CLI::IPanel> spPanel = CLI::PanelFactory::getPanel(CLI::PanelType::DEFUALT, "EIGENVALPanel");
-    spPanel->ChangePromMessage(spPanel->GetTitel());
+    std::shared_ptr<CLI::IPanel> exitPanel = CLI::PanelFactory::getPanel({ CLI::PanelType::DEFUALT, "EXIT" });
+    exitPanel->ChangePromMessage(exitPanel->GetTitel());
+
+    CLI::PanelManger* pm = CLI::PanelManger::GetPanelManger();
+    pm->AddNewPanel(mainMenupanel);
+    pm->AddNewPanel(eigenvalPanel);
+    pm->AddNewPanel(exitPanel);
     
-    std::weak_ptr<CLI::IPanel> wpPanel = spPanel;
-    std::weak_ptr<CLI::IPanel> wpParent = parent;
-    CLI::OptionSetting backOptionSetting{ "Back to " + parent->GetTitel(), [wpPanel,wpParent]()->void
-      {
-        auto panel = wpPanel.lock();
-        auto parent = wpParent.lock();
-        if (panel && parent)
-        {
-          nextPanel = parent->GetTitel();
-        }
-        else
-        {
-          nextPanel.clear();
-        }
-      }
-    };
-    spPanel->AddOption(backOptionSetting);
+    pm->SetNextPanel(mainMenupanel);
 
-    CLI::OptionSetting goToOptionSetting{ "Go to "+ spPanel->GetTitel(), [wpPanel]()->void
-      {
-        auto panel = wpPanel.lock();
-        if (panel)
-        {
-          nextPanel = panel->GetTitel();
-        }
-      }
-    };
-    parent->AddOption(goToOptionSetting);
+    pm->SetTransition(mainMenupanel, eigenvalPanel);
+    pm->SetTransition(mainMenupanel, exitPanel);
 
-    parent->swapOption(parent->GetOptionNumber() - 1, parent->GetOptionNumber() - 2);
 
-    return spPanel;
   }
 }
 
 int main()
 {
-	std::shared_ptr<CLI::IPanel> pMainPanel = VASP_utility::createMainPanel();
-  std::shared_ptr<CLI::IPanel> pEIGENVALPanel = VASP_utility::createEIGENVALPanel(pMainPanel);
-  VASP_utility::panelMap.insert({ pMainPanel->GetTitel(), pMainPanel });
-  VASP_utility::panelMap.insert({ pEIGENVALPanel->GetTitel(), pEIGENVALPanel });
-  VASP_utility::nextPanel = pMainPanel->GetTitel();
+  VASP_utility::createMenu();
+
 
 //#ifdef DEBUG_BUILD
 //	std::string nameFile = "exempl";
@@ -98,22 +107,34 @@ int main()
 	//efch.Convert("_OUTPUT_EIGNVAL", 3.81811261);
 	//efch.GetFermiSurface("_OUTPUT_FERMISURFACE", 3.81811261);
 
-	while (!VASP_utility::nextPanel.empty())
-	{
-    auto it = VASP_utility::panelMap.find(VASP_utility::nextPanel);
-    if (it == VASP_utility::panelMap.end())
+  CLI::PanelManger* pm = CLI::PanelManger::GetPanelManger();
+  while (true)
+  {
+    std::shared_ptr<CLI::IPanel> panel = pm->GetNextPanel();
+    if (!panel.get())
     {
-      throw std::logic_error(std::string(VASP_utility::nextPanel) + "has not found in VASP_utility::panelMap");
+      throw std::logic_error("panel doesn't exist");
     }
-    std::shared_ptr<CLI::IPanel> currentPanel = it->second;
+    if (panel->GetTitel() == "EXIT")
+    {
+      break;
+    }
     VASP_utility::clear_screen();
-    currentPanel->ShowPanel();
-		int choice;
-		std::cin >> choice;
+    panel->ShowPanel();
+    int choice = VASP_utility::GetInt([panel](int choice)
+      {
+        if (choice < 0 || choice >= panel->GetOptionNumber())
+        {
+          std::cout << "Sorry, that is incorrect option; please try again\n";
+          return false;
+        }
+        return true;
+      }
+    );
+    panel->SelectOption(choice);
+  }
 
-    currentPanel->SelectOption(choice);
-	}
-
-
+  VASP_utility::clear_screen();
+  VASP_utility::KeepWindowOpen();
 	return 0;
 }

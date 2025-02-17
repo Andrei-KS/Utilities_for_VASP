@@ -9,10 +9,27 @@
 #include "IPanel.h"
 #include <memory>
 
-namespace CLI {
-  class PanelFactory {
+namespace CLI
+{
+  /**
+  * 
+  */
+  struct PanelSetting
+  {
+    PanelType mType;
+    std::string mName;
+  };
+
+  /**
+  * 
+  */
+  class PanelFactory
+  {
   public:
-    static std::shared_ptr<IPanel> getPanel(PanelType type, const char* panelName);
+    /**
+    * 
+    */
+    static std::shared_ptr<IPanel> getPanel(const PanelSetting& setting);
   };
 }
 

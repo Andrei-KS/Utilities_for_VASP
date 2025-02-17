@@ -8,7 +8,8 @@
 #include "IPanel.h"
 #include <string>
 
-namespace CLI {
+namespace CLI
+{
   /**
   * 
   */
