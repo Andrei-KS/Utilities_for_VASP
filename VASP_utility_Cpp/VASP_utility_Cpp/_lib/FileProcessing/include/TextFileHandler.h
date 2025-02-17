@@ -1,3 +1,7 @@
+/*
+  @author Andrei-KS
+  created at the 2021
+*/
 #ifndef __TEXTFILEHANDLER_H__
 #define __TEXTFILEHANDLER_H__
 

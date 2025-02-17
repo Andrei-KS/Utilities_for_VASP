@@ -18,7 +18,7 @@ namespace VASP_utility {
     return;
   }
 
-  void SkipToInt()
+  void SkipToNomber()
   {
     std::cout << "Sorry, that was not a number; please try again\n";
     if (std::cin.fail())
@@ -52,7 +52,27 @@ namespace VASP_utility {
           continue;
         }
       }
-      SkipToInt();
+      SkipToNomber();
+    }
+  }
+
+  double GetDouble(const std::function<bool(int)> check = [](int) {return true; })
+  {
+    double n = 0;
+    while (true)
+    {
+      if (std::cin >> n)
+      {
+        if (check(n))
+        {
+          return n;
+        }
+        else
+        {
+          continue;
+        }
+      }
+      SkipToNomber();
     }
   }
 
@@ -66,13 +86,84 @@ namespace VASP_utility {
 #endif
   }
 
+  std::string getPathSeparate()
+  {
+#if defined(WIN32)||defined(_WIN32)
+    return "\\";
+#else
+    return "/";
+#endif
+  }
+
+
+  EIGENVALFileConvertingHandler* eigenvalFileConvertingHandler = nullptr;
+  double* eigenvalFermiLevel = nullptr;
+  std::string GetPromEIGENVAL(std::shared_ptr<CLI::IPanel> panel)
+  {
+    std::string result;
+    if (panel.get())
+    {
+      result = panel->GetTitel() +
+        "\n EIGENVAL " + (eigenvalFileConvertingHandler == nullptr ? "not found" : eigenvalFileConvertingHandler->getFullFileName()) +
+        "\n FermiLevel " + std::to_string(*eigenvalFermiLevel);
+    }
+    return result;
+  }
+
+
   void createMenu()
   {
     std::shared_ptr<CLI::IPanel> mainMenupanel = CLI::PanelFactory::getPanel({ CLI::PanelType::DEFUALT, "MainMenu" });
     mainMenupanel->ChangePromMessage(mainMenupanel->GetTitel());
 
     std::shared_ptr<CLI::IPanel> eigenvalPanel = CLI::PanelFactory::getPanel({ CLI::PanelType::DEFUALT, "EIGENVALPanel" });
-    eigenvalPanel->ChangePromMessage(eigenvalPanel->GetTitel());
+    eigenvalPanel->ChangePromMessage(GetPromEIGENVAL(eigenvalPanel));
+
+    std::weak_ptr<CLI::IPanel> wpEigenvalPanel = eigenvalPanel;
+    CLI::OptionSetting setEIGENVALPathOptionSetting{ "Set new EIGENVAL path", [wpEigenvalPanel]()->void
+      {
+        auto panel = wpEigenvalPanel.lock();
+        std::cout << "please enter new EIGENVAL path(or !back if you want return to panel):";
+        std::string nameFile;
+        std::getline(std::cin, nameFile);
+        while (true)
+        {
+          std::cin.clear();
+          std::getline(std::cin, nameFile);
+          
+          if(nameFile == "!back")
+          {
+            break;
+          }
+
+          nameFile += getPathSeparate() + "EIGENVAL";
+          
+          try
+          {
+            EIGENVALFileConvertingHandler* newEigenvalFileConvertingHandler = new EIGENVALFileConvertingHandler(nameFile);
+            delete eigenvalFileConvertingHandler;
+            eigenvalFileConvertingHandler = newEigenvalFileConvertingHandler;
+            break;
+          }
+          catch (std::exception e)
+          {
+            std::cout << e.what() << "\n";
+          }
+        }
+        panel->ChangePromMessage(GetPromEIGENVAL(panel));
+      }
+    };
+    eigenvalPanel->AddOption(setEIGENVALPathOptionSetting);
+
+    CLI::OptionSetting setFermiLevelOptionSetting{ "Set new FermiLevel", [wpEigenvalPanel]()->void
+      {
+        auto panel = wpEigenvalPanel.lock();
+        std::cout << "please enter new Fermi level:";
+        *eigenvalFermiLevel = GetDouble();
+        panel->ChangePromMessage(GetPromEIGENVAL(panel));
+      }
+    };
+    eigenvalPanel->AddOption(setFermiLevelOptionSetting);
 
     std::shared_ptr<CLI::IPanel> exitPanel = CLI::PanelFactory::getPanel({ CLI::PanelType::DEFUALT, "EXIT" });
     exitPanel->ChangePromMessage(exitPanel->GetTitel());
@@ -86,13 +177,21 @@ namespace VASP_utility {
 
     pm->SetTransition(mainMenupanel, eigenvalPanel);
     pm->SetTransition(mainMenupanel, exitPanel);
-
-
   }
 }
 
 int main()
 {
+  VASP_utility::eigenvalFermiLevel = new double(0);
+  try
+  {
+    std::string nameEIGENVAL = "EIGENVAL";
+    VASP_utility::eigenvalFileConvertingHandler = new EIGENVALFileConvertingHandler(nameEIGENVAL);
+  }
+  catch (std::exception e)
+  {
+    std::cout << e.what();
+  }
   VASP_utility::createMenu();
 
 
@@ -136,5 +235,7 @@ int main()
 
   VASP_utility::clear_screen();
   VASP_utility::KeepWindowOpen();
+
+  delete VASP_utility::eigenvalFermiLevel;
 	return 0;
 }

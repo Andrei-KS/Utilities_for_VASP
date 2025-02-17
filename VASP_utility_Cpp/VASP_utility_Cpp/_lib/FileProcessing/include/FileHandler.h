@@ -1,3 +1,7 @@
+/*
+  @author Andrei-KS
+  created at the 2021
+*/
 #ifndef __FILEHANDLER_H__
 #define __FILEHANDLER_H__
 
@@ -23,6 +27,11 @@ public:
 	*/
 	virtual ~FileHandler();
 
+  /**
+  * 
+  */
+  const std::string& getFullFileName() const { return mName; }
+
 protected:
 	/**
 	* Getting a link to the fstream of the file associated with this object 
@@ -32,7 +41,9 @@ protected:
 
 private:
 	/** contains descriptor opened file */
-	std::fstream itsFile;
+	std::fstream mFile;
+  /** */
+  std::string mName;
 };
 
 #endif // !__FILEHANDLER_H__

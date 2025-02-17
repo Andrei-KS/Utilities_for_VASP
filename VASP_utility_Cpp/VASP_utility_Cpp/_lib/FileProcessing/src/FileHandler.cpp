@@ -1,25 +1,27 @@
 
 
 #include "FileHandler.h"
+#include <stdexcept>
 
 FileHandler::FileHandler(std::string fileName)
 {
-	itsFile.open(fileName, std::fstream::in);
-	if (itsFile.is_open() == false)
+	mFile.open(fileName, std::fstream::in);
+	if (mFile.is_open() == false)
 	{
-		throw ("Error: FileHandler::FileHandler(std::string fileName): File was not open");
+		throw std::logic_error("Error: FileHandler::FileHandler(std::string fileName): File was not open");
 	}
+  mName = fileName;
 }
 
 FileHandler::~FileHandler()
 {
-	if (itsFile.is_open())
+	if (mFile.is_open())
 	{
-		itsFile.close();
+		mFile.close();
 	}
 }
 
 std::fstream& FileHandler::getFile()
 {
-	return itsFile;
+	return mFile;
 }

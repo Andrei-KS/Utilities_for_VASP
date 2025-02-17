@@ -1,3 +1,7 @@
+/*
+  @author Andrei-KS
+  created at the 2021
+*/
 #ifndef __EIGENVALFILECONVERTINGHANDLER_H__
 #define __EIGENVALFILECONVERTINGHANDLER_H__
 
