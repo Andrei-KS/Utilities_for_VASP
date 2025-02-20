@@ -53,10 +53,13 @@ namespace FileProcessing
     }
 
     // reading data from file
+    std::string resultLineToWrite;
+    resultLineToWrite.reserve(100);
     const size_t sizeBlockData = numberOfBands + 2;
     currentLine = 0;
     while (getline(fs, currentLineRead))
     {
+      resultLineToWrite.clear();
       std::vector<std::string> splitedString = StringProcessingUtilits::SplitStringToVector(currentLineRead);
       currentLine++;
       if (currentLine == 1)
@@ -65,29 +68,29 @@ namespace FileProcessing
         {
           for (size_t i = 0; i < 3; i++)
           {
-            splitedString[i] += "\t";
-            dfs.write(splitedString[i].c_str(), splitedString[i].size());
+            resultLineToWrite.insert(resultLineToWrite.end(), splitedString[i].begin(), splitedString[i].end());
+            resultLineToWrite.push_back('\t');
           }
         }
       }
       else if (currentLine == sizeBlockData)
       {
-        dfs.write("\n", 1);
+        resultLineToWrite.push_back('\n');
         currentLine = 0;
       }
       else
       {
         double value = std::stod(splitedString[1]) - FermiEnergy;
-        splitedString[1] = std::to_string(value);
-        splitedString[1] += "\t";
+        resultLineToWrite.append(std::to_string(value));
+        resultLineToWrite.push_back('\t');
         if (splitedString.size() == 5)
         {
           value = std::stod(splitedString[2]) - FermiEnergy;
-          splitedString[1] = std::to_string(value);
-          splitedString[1] += "\t";
+          resultLineToWrite.append(std::to_string(value));
+          resultLineToWrite.push_back('\t');
         }
-        dfs.write(splitedString[1].c_str(), splitedString[1].size());
       }
+      dfs.write(resultLineToWrite.c_str(), resultLineToWrite.size());
     }
 
     // reset the end-of-file flag and return the carriage
